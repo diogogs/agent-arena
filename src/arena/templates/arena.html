@@ -104,6 +104,8 @@
 
 <div class="wrap">
   <div class="controls">
+    <select id="dayselect" aria-label="Jornada"
+      style="appearance:auto;border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:7px;padding:8px 10px;font:600 13px system-ui,sans-serif;"></select>
     <button id="play" type="button">▶ Reproduzir</button>
     <input id="scrub" type="range" min="0" max="1" value="0" step="1" aria-label="Momento da sessão">
     <div class="clock" id="clock"></div>
@@ -146,7 +148,9 @@
 
 <script>
 "use strict";
-const DATA = __DATA__;
+const INLINE = __DATA__;
+
+function boot(DATA) {
 const AGENTS = Object.keys(DATA.agents);
 const N = DATA.ts.length;
 const COLOR = { benchmark:"var(--c-benchmark)", momentum:"var(--c-momentum)",
@@ -157,8 +161,9 @@ const fmt2 = new Intl.NumberFormat("pt-PT",{minimumFractionDigits:2,maximumFract
 
 document.getElementById("season").textContent = DATA.season;
 document.getElementById("matchday").textContent = DATA.matchday;
-if (DATA.live) document.getElementById("live-badge").innerHTML = '<span class="badge-live">AO VIVO</span>';
-document.getElementById("n-matchdays").textContent = DATA.n_matchdays;
+document.getElementById("live-badge").innerHTML =
+  DATA.live ? '<span class="badge-live">AO VIVO</span>' : "";
+document.getElementById("n-matchdays").textContent = INLINE.n_matchdays;
 document.getElementById("gens").textContent =
   Object.entries(DATA.generations).map(([a,g]) => `${a}: ${g}`).join(" · ") || "—";
 
@@ -275,14 +280,14 @@ function render(){
   document.getElementById("scrub").value = t;
 }
 
-/* season table (static) */
-const st = DATA.standings;
+/* season table (always the season view, whatever day is being replayed) */
+const st = INLINE.standings;
 const srank = Object.keys(st).sort((a,b)=>st[b].equity-st[a].equity);
 document.getElementById("season-table").innerHTML =
   "<tr><th>Agente</th><th>Capital €</th><th>P&L época €</th><th>J. ganhas</th></tr>" +
   srank.map(a=>{
     const pnl = st[a].equity - CAPITAL;
-    return `<tr><td><span class="dotc" style="background:${COLOR[a]}"></span>${DATA.agents[a].label}</td>`+
+    return `<tr><td><span class="dotc" style="background:${COLOR[a]}"></span>${INLINE.agents[a].label}</td>`+
       `<td>${fmt.format(st[a].equity)}</td><td class="${pnl>=0?"pos":"neg"}">${pnl>=0?"+":""}${fmt.format(pnl)}</td>`+
       `<td>${st[a].won}</td></tr>`;
   }).join("");
@@ -299,7 +304,30 @@ function play(){
 playBtn.addEventListener("click", ()=> timer?stop():play());
 scrub.addEventListener("input", ()=>{ stop(); t=+scrub.value; render(); });
 
+/* matchday selector (calendar of jornadas) */
+const sel = document.getElementById("dayselect");
+sel.innerHTML = INLINE.days.map(d =>
+  `<option value="${d.matchday}">${d.matchday}${d.winner ? " · venceu: " + (INLINE.agents[d.winner]?.label || d.winner) : " · em curso"}</option>`
+).join("");
+sel.value = DATA.matchday;
+sel.addEventListener("change", () => {
+  const chosen = sel.value;
+  location.search = chosen === INLINE.matchday ? "" : "?d=" + chosen;
+});
+
 t = N-1; render();  // land on "now"; replay on demand
+}
+
+/* boot: inline latest, or fetch a past matchday from ?d= */
+const wanted = new URLSearchParams(location.search).get("d");
+if (wanted && wanted !== INLINE.matchday) {
+  fetch("data/" + wanted + ".json")
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(boot)
+    .catch(() => boot(INLINE));
+} else {
+  boot(INLINE);
+}
 </script>
 </body>
 </html>
