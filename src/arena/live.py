@@ -49,18 +49,23 @@ def market_day(now_et: datetime) -> bool:
     return now_et.weekday() < 5 and now_et.strftime("%Y-%m-%d") not in HOLIDAYS
 
 
-def latest_generation_params(agent: str) -> tuple[str, dict]:
-    entries = [e for e in load_all() if e["agent"] == agent]
-    if not entries:
-        raise RuntimeError(f"no generation in the registry for {agent}")
-    entry = entries[-1]
+def promoted_generation_params(agent: str) -> tuple[str, dict]:
+    """The FIELDED generation: last entry in the promotions ledger, never
+    merely the latest trained (training alone must not change who plays)."""
+    from .promote import current_lineup_ids
+
+    ids = current_lineup_ids()
+    if agent not in ids:
+        raise RuntimeError(f"no promoted generation for {agent} — seed promotions.jsonl")
+    registry = {e["generation_id"]: e for e in load_all()}
+    entry = registry[ids[agent]]
     return entry["generation_id"], entry["params"]
 
 
 def lineup() -> tuple[dict[str, Agent], dict[str, str]]:
-    """The live squad: latest registered generation of each trader."""
-    mom_id, mom_params = latest_generation_params("momentum")
-    rev_id, rev_params = latest_generation_params("reversao")
+    """The live squad: the promoted generation of each trader."""
+    mom_id, mom_params = promoted_generation_params("momentum")
+    rev_id, rev_params = promoted_generation_params("reversao")
     agents: dict[str, Agent] = {
         "benchmark": Benchmark("SPY"),
         "cash": Cash(),

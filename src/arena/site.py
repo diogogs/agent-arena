@@ -70,12 +70,34 @@ def build_payload() -> dict:
     }
 
 
+def build_ginasio_payload() -> dict:
+    from .promote import current_lineup_ids, load_promotions
+    from .registry import load_all
+
+    return {
+        "generations": [
+            {"generation_id": e["generation_id"], "agent": e["agent"],
+             "train": e["train"], "validation": e["validation"],
+             "train_sessions": e["train_sessions"]}
+            for e in load_all()
+        ],
+        "promotions": load_promotions(),
+        "lineup": current_lineup_ids(),
+    }
+
+
 def build_site() -> Path:
     DOCS.mkdir(exist_ok=True)
     payload = json.dumps(build_payload(), ensure_ascii=False, separators=(",", ":"))
     html = TEMPLATE.read_text("utf-8").replace("__DATA__", payload, 1)
     out = DOCS / "index.html"
     out.write_text(html, encoding="utf-8")
+
+    gym_payload = json.dumps(build_ginasio_payload(), ensure_ascii=False, separators=(",", ":"))
+    gym_template = TEMPLATE.parent / "ginasio.html"
+    (DOCS / "ginasio.html").write_text(
+        gym_template.read_text("utf-8").replace("__DATA__", gym_payload, 1), encoding="utf-8"
+    )
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     return out
 
