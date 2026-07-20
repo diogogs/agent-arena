@@ -98,12 +98,12 @@ cron fallback do Actions, com os atrasos conhecidos); Alpaca opcional. 10 testes
 - [x] **J1 — Maquete visual da arena** (2026-07-20): replay do dia sintético com
   algoritmos reais + custos, publicada como Artifact; aprovada pelo autor, com
   duas direções novas dele: jornadas/época e aprendizagem geracional (→ ADR-002)
-- [ ] **J2 — Motor + Ginásio**: histórico intradiário verificado + cache,
-  simulador point-in-time com testes de no-lookahead, custos, momentum +
-  reversão, treino walk-forward (Optuna), registo de gerações
-  (+ verificação da conta Alpaca/KYC e limites do free tier)
-- [ ] **J3 — Arena live**: loop paper (cron→Actions), jornadas + classificação,
-  site estático (páginas Arena e Ginásio)
+- [x] **J2 — Motor + Ginásio** (2026-07-20): yfinance verificado (15m×60d,
+  1h×730d), arquivo insert-only, no-lookahead por construção + testes,
+  walk-forward Optuna, gerações g001 registadas (conta Alpaca: pendente, opcional)
+- [x] **J3 — Arena live** (2026-07-20): ciclo idempotente, ledger de jornadas,
+  site do ledger real, GO-LIVE (repo público + Pages + 1º ciclo remoto ✓);
+  falta do autor: PAT + cron-job.org (página Ginásio: fica para a J4)
 - [ ] **J4 — Pré-registo commitado + arranque da ÉPOCA 1** (geração v1 do ginásio)
 - [ ] **J5 — Meia época**: relatório; agente ML / o Capitão (época 1.5)
 - [ ] **J6 — Fim da época**: write-up honesto + decisão go/no-go
