@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Environment
+.env
+.env.*
+
+# Data working files
+data/raw/
+*.tmp
+
+# OS / editor
+.DS_Store
+Thumbs.db
