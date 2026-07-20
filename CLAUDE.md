@@ -31,9 +31,20 @@
 | Cash | O controlo ("não fazer nada") |
 | Momentum (breakout da abertura + trailing stop) | "A força continua" |
 | Reversão (desvios ao VWAP) | A religião oposta — o duelo é o curso |
-| Comentador LLM (não negoceia) | Resume o dia, explica os duelos; 1-2 chamadas/dia free tier |
 
-Época 1.5: agente ML. Época 2: comentador promovível a trader. Máx. 4 traders/época.
+Época 1.5+: agente ML e o Capitão (alocador). LLM: backlog (fora do caminho
+crítico, decisão do autor 2026-07-20). Máx. 4 traders/época.
+
+## Ginásio e Arena (ADR-002 — o coração do desenho)
+
+**Ginásio** = simulador point-in-time sobre histórico intradiário (no-lookahead
+por arquitetura + testes): é onde se aprende, rápido (Optuna walk-forward;
+gerações em minutos). **Arena** = paper live: é o exame, lento. Promoções
+Ginásio→Arena no máx. 1×/semana, registo insert-only por geração. Cada geração
+publica 3 números: treino / validação / live — o fosso entre eles é métrica
+pública de primeira classe. Jornadas: cada sessão live é uma jornada (resultado
+próprio + replay); a época acumula a classificação geral. A manchete de longo
+prazo: a curva geracional ("cada geração perde menos na Arena?").
 
 ## Produto e stack
 
@@ -43,8 +54,9 @@ classificativa, comentário diário, track record da época. Universo: SPY, QQQ 
 4-6 megacaps (ultra-líquidos). Dados: Alpaca IEX (gratuito; fills aproximados —
 IEX ≈ 2-3% do volume, documentado). Execução: simulador próprio transparente e
 testável. Disparo: cron-job.org → GitHub Actions dispatch a cada 15-30 min
-(lição energia ADR-013: nunca confiar no scheduler do Actions). LLM: Gemini flash
-free tier (padrão dr-watch). Python + uv.
+(lição energia ADR-013: nunca confiar no scheduler do Actions). Histórico para o
+Ginásio: Alpaca IEX / Polygon free (~2 anos de barras de minuto), cacheado em
+parquet — verificar fontes e limites logo no arranque da J2. Python + uv.
 
 ## Avaliação
 
@@ -54,21 +66,27 @@ write-up final, incluindo onde falha.
 
 ## Estado (2026-07-20)
 
-**J0 fechada**: charter aprovado pelo autor (plano em conversa, 2026-07-20),
-repo local criado. **J1 em curso**: maquete visual da arena — dia sintético
-(gerado com algoritmos reais de momentum/reversão + custos) em replay de ~60 s,
-publicada como Artifact para aprovação do autor. Sem remoto GitHub ainda (criar
-público quando o autor aprovar).
+**J0+J1 fechadas** (2026-07-20): charter aprovado, repo local, maquete da arena
+(replay do dia sintético com algoritmos reais + custos) publicada como Artifact e
+aprovada pelo autor. Das direções do autor nasceu o **ADR-002 (Ginásio/Arena)**:
+treino histórico point-in-time rápido, arena live como exame, jornadas + curva
+geracional; LLM para o backlog. **Próximo: J2 — Motor + Ginásio.** Sem remoto
+GitHub ainda (criar público só com aprovação do autor).
 
 ## Jornadas
 
 - [x] **J0 — Charter + repo** (2026-07-20)
-- [ ] **J1 — Maquete visual da arena** (replay do dia sintético) → aprovação dos olhos
-- [ ] **J2 — Motor**: dados IEX, executor com custos, momentum + reversão +
-  benchmark/cash, estado insert-only, testes (incl. verificação da conta Alpaca/KYC)
-- [ ] **J3 — Arena ao vivo**: site estático + pipeline Actions/cron
-- [ ] **J4 — Comentador LLM + pré-registo commitado + arranque da ÉPOCA 1**
-- [ ] **J5 — Meia época**: relatório; agente ML (época 1.5)
+- [x] **J1 — Maquete visual da arena** (2026-07-20): replay do dia sintético com
+  algoritmos reais + custos, publicada como Artifact; aprovada pelo autor, com
+  duas direções novas dele: jornadas/época e aprendizagem geracional (→ ADR-002)
+- [ ] **J2 — Motor + Ginásio**: histórico intradiário verificado + cache,
+  simulador point-in-time com testes de no-lookahead, custos, momentum +
+  reversão, treino walk-forward (Optuna), registo de gerações
+  (+ verificação da conta Alpaca/KYC e limites do free tier)
+- [ ] **J3 — Arena live**: loop paper (cron→Actions), jornadas + classificação,
+  site estático (páginas Arena e Ginásio)
+- [ ] **J4 — Pré-registo commitado + arranque da ÉPOCA 1** (geração v1 do ginásio)
+- [ ] **J5 — Meia época**: relatório; agente ML / o Capitão (época 1.5)
 - [ ] **J6 — Fim da época**: write-up honesto + decisão go/no-go
 
 ## Convenções
