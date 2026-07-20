@@ -1,0 +1,32 @@
+name: arena-live
+
+on:
+  workflow_dispatch:  # primary trigger: cron-job.org dispatch (energia ADR-013 lesson)
+  schedule:
+    - cron: "*/30 13-21 * * 1-5"  # fallback only; Actions cron is unreliable
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arena-live
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - name: Run arena cycle
+        run: uv run python -m arena.live
+      - name: Rebuild site
+        run: uv run python -m arena.site
+      - name: Commit ledger and site
+        run: |
+          git config user.name "arena-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ledger data/archive docs
+          git diff --cached --quiet || git commit -m "arena: cycle $(date -u +%Y-%m-%dT%H:%M)Z"
+          git push

@@ -85,6 +85,50 @@ def _fill(portfolio: Portfolio, order: Order, price: float, equity: float,
     return Trade(session, bar, agent, order.symbol, "sell", qty, fill_price, fee, order.reason)
 
 
+def step_bar(
+    session: Session,
+    t: int,
+    agents: dict[str, Agent],
+    portfolios: dict[str, Portfolio],
+    is_last: bool,
+    debug_checks: bool = False,
+) -> dict[str, tuple[float, list[Trade]]]:
+    """Advance every agent through ONE bar; returns per-agent (equity, trades).
+
+    The single execution path shared by the Gym (full-session replay) and the
+    live Arena (incremental cycles) — identical treatment by construction.
+    """
+    out: dict[str, tuple[float, list[Trade]]] = {}
+    view = MarketView(session, t)
+    prices = {s: float(session.close[s][t]) for s in session.symbols}
+    for name, agent in agents.items():
+        pf = portfolios[name]
+        for s in pf.positions:
+            pf.peak_price[s] = max(pf.peak_price.get(s, prices[s]), prices[s])
+        equity = pf.equity(prices)
+        orders = list(agent.decide(view, PortfolioView(
+            cash=pf.cash, equity=equity,
+            positions=dict(pf.positions),
+            entry_price=dict(pf.entry_price),
+            peak_price=dict(pf.peak_price),
+        )))
+        if agent.flatten_eod and is_last:
+            orders = [Order(s, "sell", 1.0, "end of session — flat overnight")
+                      for s in list(pf.positions)]
+        trades: list[Trade] = []
+        for order in orders:
+            trade = _fill(pf, order, prices[order.symbol], equity, session.date, t, name)
+            if trade:
+                trades.append(trade)
+        eq = pf.equity(prices)
+        out[name] = (eq, trades)
+        if debug_checks:
+            recomputed = pf.cash + sum(q * prices[s] for s, q in pf.positions.items())
+            assert abs(recomputed - eq) < 1e-6, "conservation broken"
+            assert pf.cash > -1e-6, f"negative cash for {name}"
+    return out
+
+
 def run_session(
     session: Session,
     agents: dict[str, Agent],
@@ -96,31 +140,9 @@ def run_session(
     agents are forced flat on the last bar."""
     results = {name: AgentDayResult([], []) for name in agents}
     for t in range(session.n_bars):
-        view = MarketView(session, t)
-        prices = {s: float(session.close[s][t]) for s in session.symbols}
-        for name, agent in agents.items():
-            pf = portfolios[name]
-            for s in pf.positions:
-                pf.peak_price[s] = max(pf.peak_price.get(s, prices[s]), prices[s])
-            equity = pf.equity(prices)
-            orders = list(agent.decide(view, PortfolioView(
-                cash=pf.cash, equity=equity,
-                positions=dict(pf.positions),
-                entry_price=dict(pf.entry_price),
-                peak_price=dict(pf.peak_price),
-            )))
-            if agent.flatten_eod and t == session.n_bars - 1:
-                orders = [Order(s, "sell", 1.0, "end of session — flat overnight")
-                          for s in list(pf.positions)]
-            for order in orders:
-                trade = _fill(pf, order, prices[order.symbol], equity,
-                              session.date, t, name)
-                if trade:
-                    results[name].trades.append(trade)
-            eq = pf.equity(prices)
-            results[name].equity_curve.append(eq)
-            if debug_checks:
-                recomputed = pf.cash + sum(q * prices[s] for s, q in pf.positions.items())
-                assert abs(recomputed - eq) < 1e-6, "conservation broken"
-                assert pf.cash > -1e-6, f"negative cash for {name}"
+        step = step_bar(session, t, agents, portfolios,
+                        is_last=(t == session.n_bars - 1), debug_checks=debug_checks)
+        for name, (equity, trades) in step.items():
+            results[name].equity_curve.append(equity)
+            results[name].trades.extend(trades)
     return results

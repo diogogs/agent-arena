@@ -76,9 +76,18 @@ verdes (lookahead, conservação, custo exato do round-trip, flatten EOD,
 determinismo). Ginásio: walk-forward Optuna → primeiras gerações treinadas em
 dados reais (60 sessões, abr-jul 2026) e registadas insert-only:
 `momentum-g001` (val +3 475 €, +2 283 vs bench — 12 sessões = ruído, ler com
-ICs) e `reversao-g001` (val +327 €, −865 vs bench). Pendente do autor: conta
-Alpaca (upgrade de dados, não bloqueia). **Próximo: J3 — Arena live** (loop
-paper cron→Actions, jornadas, site estático). Sem remoto GitHub ainda.
+ICs) e `reversao-g001` (val +327 €, −865 vs bench). **J3 CONSTRUÍDA E VIVA
+LOCALMENTE** (2026-07-20): `arena.live.run_cycle` (idempotente — testado; só
+barras fechadas; jornada fecha no bar das 15:45 ET; ledger insert-only em
+`data/ledger/`: cycles/trades/matchdays.jsonl + state.json), executor único
+partilhado gym/live (`step_bar`), **primeira jornada real em curso na época 0**
+(2026-07-20: 3 trades reais das g001; momentum a bater o benchmark intradia).
+Site estático gerado do ledger (`arena.site` → `docs/index.html`, Pages-ready)
+com a experiência da maquete aprovada; workflow `arena-live.yml` pronto
+(dispatch + cron fallback). Free-tier auditado ✓ (risco nº1: yfinance de IPs
+do Actions — plano B: Alpaca). **Go-live = 4 gestos do autor**: repo público
++ push; Pages (main, /docs); PAT fine-grained; jobs cron-job.org 15/15 min
+13:25-20:10 UTC seg-sex. Alpaca opcional. 10 testes verdes.
 
 ## Jornadas
 

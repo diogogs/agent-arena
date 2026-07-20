@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Liga — arena</title>
+<style>
+  :root {
+    --bg:#f7f8f7; --surface:#fdfdfc; --ink:#16202b; --ink-2:#4d5a66; --muted:#8a9099;
+    --hairline:#e2e4e1; --border:rgba(22,32,43,.10); --navy:#1e2a38; --accent:#2a5a8c;
+    --header-ink:#f2f5f8; --header-muted:#9db1c4; --up:#0ca30c; --down:#d03b3b;
+    --c-benchmark:#16202b; --c-momentum:#2a78d6; --c-reversao:#1baf7a; --c-cash:#8a9099;
+    --tooltip-bg:#1e2a38; --tooltip-ink:#f2f5f8; --live:#d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#10151b; --surface:#171e26; --ink:#f0f3f6; --ink-2:#b6c0ca; --muted:#7e8894;
+      --hairline:#262e38; --border:rgba(240,243,246,.10); --navy:#141d28; --accent:#6f9fce;
+      --c-benchmark:#e8ecf0; --c-momentum:#3987e5; --c-reversao:#199e70;
+      --down:#e66767; --tooltip-bg:#f0f3f6; --tooltip-ink:#16202b; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 20px 56px; }
+  header.masthead { background:linear-gradient(135deg,var(--navy),#2a5a8c);
+                    color:var(--header-ink); padding:24px 0 18px; margin-bottom:18px; }
+  header.masthead .wrap { padding-bottom:0; }
+  .eyebrow { font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+             color:var(--header-muted); font-weight:600; margin-bottom:6px; }
+  h1 { margin:0 0 6px; font-size:23px; font-weight:650; letter-spacing:-.01em; }
+  header p { margin:0; max-width:72ch; color:var(--header-muted); font-size:13px; }
+  .badge-live { display:inline-block; background:var(--live); color:#fff; font-size:11px;
+                font-weight:700; letter-spacing:.08em; padding:2px 8px; border-radius:5px;
+                margin-left:8px; vertical-align:2px; animation:pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  @media (prefers-reduced-motion: reduce) { .badge-live { animation:none; } }
+
+  .controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+              background:var(--surface); border:1px solid var(--border); border-radius:10px;
+              padding:10px 14px; margin-bottom:14px; }
+  .controls button { appearance:none; border:1px solid var(--accent); background:transparent;
+              color:var(--accent); font:600 13.5px system-ui,sans-serif; padding:8px 16px;
+              border-radius:7px; cursor:pointer; min-width:104px; }
+  .controls button:hover { background:var(--accent); color:#fff; }
+  .controls button:focus-visible,.controls input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .controls input[type="range"] { flex:1; min-width:160px; accent-color:var(--accent); }
+  .clock { font-variant-numeric:tabular-nums; font-weight:650; min-width:200px; text-align:right; }
+  .clock small { color:var(--muted); font-weight:500; }
+
+  .tickers { display:flex; gap:10px; flex-wrap:wrap; margin:0 0 14px; }
+  .chip { background:var(--surface); border:1px solid var(--border); border-radius:8px;
+          padding:6px 11px; font-size:12.5px; display:flex; gap:8px; align-items:baseline; }
+  .chip b { font-size:13px; }
+  .chip .px { font-variant-numeric:tabular-nums; color:var(--ink-2); }
+  .chip .chg { font-variant-numeric:tabular-nums; font-weight:650; }
+  .pos { color:var(--up); } .neg { color:var(--down); }
+
+  .grid { display:grid; grid-template-columns:1fr 330px; gap:14px; }
+  @media (max-width:960px) { .grid { grid-template-columns:1fr; } }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px;
+          padding:14px 16px; }
+  .card h3 { margin:0 0 2px; font-size:14.5px; font-weight:650; }
+  .card .sub { margin:0 0 8px; font-size:12px; color:var(--muted); }
+  .card svg { display:block; width:100%; height:auto; }
+  svg text { font:11px system-ui,sans-serif; fill:var(--muted); font-variant-numeric:tabular-nums; }
+  .gridline { stroke:var(--hairline); stroke-width:1; }
+  .eq { fill:none; stroke-width:2.25; stroke-linejoin:round; stroke-linecap:round; }
+  .eq.cash { stroke-dasharray:5 5; stroke-width:1.6; }
+  .marker { cursor:pointer; stroke-width:1.4; }
+
+  table.league { border-collapse:collapse; width:100%; font-size:13.5px;
+                 font-variant-numeric:tabular-nums; }
+  table.league th { text-align:right; color:var(--muted); font-size:11px; letter-spacing:.06em;
+                    text-transform:uppercase; padding:4px 8px; border-bottom:1px solid var(--hairline); }
+  table.league th:first-child { text-align:left; }
+  table.league td { padding:7px 8px; border-bottom:1px solid var(--hairline); text-align:right; }
+  table.league td:first-child { text-align:left; font-weight:600; }
+  .dotc { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:7px;
+          vertical-align:-1px; }
+
+  #feed { max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .trade { font-size:12.5px; line-height:1.45; border-left:3px solid var(--hairline);
+           padding-left:9px; }
+  .trade .why { color:var(--ink-2); }
+  .trade .t { color:var(--muted); font-variant-numeric:tabular-nums; }
+
+  .tooltip { position:fixed; pointer-events:none; z-index:30; opacity:0;
+             background:var(--tooltip-bg); color:var(--tooltip-ink); border-radius:6px;
+             padding:7px 10px; font-size:12.5px; line-height:1.45; max-width:280px;
+             box-shadow:0 4px 14px rgba(0,0,0,.25); }
+  footer { font-size:12px; color:var(--muted); border-top:1px solid var(--hairline);
+           margin-top:22px; padding-top:12px; max-width:86ch; }
+</style>
+</head>
+<body>
+<header class="masthead"><div class="wrap">
+  <div class="eyebrow">a liga · época <span id="season"></span> · jornada de <span id="matchday"></span><span id="live-badge"></span></div>
+  <h1>Quatro carteiras, custos incluídos, sem desculpas</h1>
+  <p>Paper trading — nenhum euro real, nenhum conselho de investimento. O benchmark é um
+  concorrente, e a tese da liga é que ele ganha; a liga existe para medir quanto, em público.
+  Fills ao preço observado (Yahoo/IEX) + 2 pb de comissão + 1 pb de slippage por lado.</p>
+</div></header>
+
+<div class="wrap">
+  <div class="controls">
+    <button id="play" type="button">▶ Reproduzir</button>
+    <input id="scrub" type="range" min="0" max="1" value="0" step="1" aria-label="Momento da sessão">
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="tickers" id="tickers"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>A corrida — capital de cada agente</h3>
+      <p class="sub">100 000 € virtuais por carteira · triângulos = trades (hover para o porquê)</p>
+      <svg id="race" viewBox="0 0 760 360"></svg>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card">
+        <h3>Jornada</h3>
+        <p class="sub">ao momento do replay</p>
+        <table class="league" id="league"></table>
+      </div>
+      <div class="card">
+        <h3>Época — classificação geral</h3>
+        <p class="sub"><span id="n-matchdays"></span> jornadas fechadas</p>
+        <table class="league" id="season-table"></table>
+      </div>
+      <div class="card">
+        <h3>Trades da jornada</h3>
+        <div id="feed"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Época 0 = pré-época de testes públicos: tudo o que vês é real (decisões, fills
+  simulados, custos) mas o pré-registo da época 1 ainda não foi commitado. Gerações em
+  campo: <span id="gens"></span>. As decisões são tomadas apenas sobre barras fechadas,
+  registadas em ledger insert-only; o histórico nunca é reescrito. Projeto pessoal de
+  engenharia e aprendizagem — não é aconselhamento financeiro.</footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+"use strict";
+const DATA = {"matchday":"2026-07-20","live":true,"season":0,"ts":["2026-07-20T13:30:00+00:00","2026-07-20T13:45:00+00:00","2026-07-20T14:00:00+00:00","2026-07-20T14:15:00+00:00","2026-07-20T14:30:00+00:00","2026-07-20T14:45:00+00:00","2026-07-20T15:00:00+00:00","2026-07-20T15:15:00+00:00","2026-07-20T15:30:00+00:00","2026-07-20T15:45:00+00:00","2026-07-20T16:00:00+00:00","2026-07-20T16:15:00+00:00","2026-07-20T16:30:00+00:00","2026-07-20T16:45:00+00:00","2026-07-20T17:00:00+00:00","2026-07-20T17:15:00+00:00","2026-07-20T17:30:00+00:00","2026-07-20T17:45:00+00:00","2026-07-20T18:00:00+00:00"],"agents":{"benchmark":{"label":"Benchmark (SPY)","equity":[99970.01,99586.72,99493.23,99585.38,99479.88,99375.71,99467.86,99610.76,99624.11,99626.78,99733.62,99694.89,99552.0,99494.57,99347.67,99377.05,99328.97,99459.85,99499.91]},"cash":{"label":"Cash","equity":[100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0]},"momentum":{"label":"Momentum","equity":[100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,99989.85,100084.7,100145.57,100186.53,100256.07,100404.12,100458.73,100397.29,100339.69,100438.25,100365.72,100431.85,100429.29]},"reversao":{"label":"Reversão (VWAP)","equity":[100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,100000.0,99992.41,99956.48,99854.89,99927.98,99950.91,100027.09,100058.6]}},"trades":[{"agent":"benchmark","symbol":"SPY","side":"buy","price":748.63,"reason":"buy and hold","ts":"2026-07-20T13:30:00+00:00","generation":"static"},{"agent":"momentum","symbol":"MSFT","side":"buy","price":396.67,"reason":"breakout above opening range (395.24)","ts":"2026-07-20T15:00:00+00:00","generation":"momentum-g001"},{"agent":"reversao","symbol":"NVDA","side":"buy","price":204.33,"reason":"2.6 sigma below VWAP — fade the move","ts":"2026-07-20T16:30:00+00:00","generation":"reversao-g001"}],"tickers":{"SPY":[748.56,745.69,744.99,745.68,744.89,744.11,744.8,745.87,745.97,745.99,746.79,746.5,745.43,745.0,743.9,744.12,743.76,744.74,745.04],"QQQ":[705.48,701.09,700.5,701.9,700.34,698.54,699.79,701.54,701.79,702.38,703.72,703.19,701.3,700.82,699.41,700.15,699.03,700.59,700.99],"AAPL":[330.58,328.9,327.17,327.02,327.96,326.43,324.96,324.9,326.02,325.98,325.22,325.0,324.42,324.24,324.8,324.72,324.37,324.73,325.47],"MSFT":[391.96,390.98,392.59,394.33,395.41,395.86,396.64,397.75,398.46,398.94,399.76,401.49,402.13,401.41,400.73,401.89,401.04,401.82,401.79],"NVDA":[207.2,205.85,205.7,205.93,205.51,204.88,205.78,206.49,206.13,205.92,205.89,205.27,204.31,204.02,203.2,203.79,203.98,204.59,204.84],"TSLA":[381.52,375.6,374.99,374.85,374.34,373.37,373.6,373.92,372.26,373.99,376.41,375.32,373.51,372.9,372.4,372.18,371.34,373.06,373.99]},"standings":{"benchmark":{"equity":99499.90923970792,"won":0},"cash":{"equity":100000.0,"won":0},"momentum":{"equity":100429.29076665067,"won":0},"reversao":{"equity":100058.59909034133,"won":0}},"n_matchdays":0,"generations":{"benchmark":"static","momentum":"momentum-g001","reversao":"reversao-g001"}};
+const AGENTS = Object.keys(DATA.agents);
+const N = DATA.ts.length;
+const COLOR = { benchmark:"var(--c-benchmark)", momentum:"var(--c-momentum)",
+                reversao:"var(--c-reversao)", cash:"var(--c-cash)" };
+const CAPITAL = 100000;
+const fmt = new Intl.NumberFormat("pt-PT",{maximumFractionDigits:0});
+const fmt2 = new Intl.NumberFormat("pt-PT",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+document.getElementById("season").textContent = DATA.season;
+document.getElementById("matchday").textContent = DATA.matchday;
+if (DATA.live) document.getElementById("live-badge").innerHTML = '<span class="badge-live">AO VIVO</span>';
+document.getElementById("n-matchdays").textContent = DATA.n_matchdays;
+document.getElementById("gens").textContent =
+  Object.entries(DATA.generations).map(([a,g]) => `${a}: ${g}`).join(" · ") || "—";
+
+const hhmm = iso => {
+  const d = new Date(iso);
+  const et = d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"America/New_York"});
+  const lx = d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Lisbon"});
+  return {et, lx};
+};
+
+/* ---------- race chart ---------- */
+const svgNS = "http://www.w3.org/2000/svg";
+const race = document.getElementById("race");
+const [W,H,L,R,T,B] = [760,360,56,14,12,26];
+const allEq = AGENTS.flatMap(a => DATA.agents[a].equity);
+const [E0,E1] = [Math.min(...allEq)-120, Math.max(...allEq)+120];
+const X = i => L + (N===1 ? 0.5 : i/(N-1)) * (W-L-R);
+const Y = v => T + (1-(v-E0)/(E1-E0)) * (H-T-B);
+for (let k=0;k<=4;k++){
+  const v = E0 + k/4*(E1-E0);
+  const ln = document.createElementNS(svgNS,"line");
+  ln.setAttribute("x1",L); ln.setAttribute("x2",W-R);
+  ln.setAttribute("y1",Y(v)); ln.setAttribute("y2",Y(v));
+  ln.setAttribute("class","gridline"); race.appendChild(ln);
+  const tx = document.createElementNS(svgNS,"text");
+  tx.setAttribute("x",L-6); tx.setAttribute("y",Y(v)+3.5); tx.setAttribute("text-anchor","end");
+  tx.textContent = fmt.format(v); race.appendChild(tx);
+}
+for (const i of [0, Math.floor(N/2), N-1]){
+  const tx = document.createElementNS(svgNS,"text");
+  tx.setAttribute("x",X(i)); tx.setAttribute("y",H-8); tx.setAttribute("text-anchor","middle");
+  tx.textContent = hhmm(DATA.ts[i]).et + " ET"; race.appendChild(tx);
+}
+const paths={}, dots={}, labels={};
+for (const a of AGENTS){
+  const p = document.createElementNS(svgNS,"path");
+  p.setAttribute("class","eq"+(a==="cash"?" cash":""));
+  p.setAttribute("style","stroke:"+COLOR[a]); race.appendChild(p); paths[a]=p;
+  const d = document.createElementNS(svgNS,"circle");
+  d.setAttribute("r",4);
+  d.setAttribute("style","fill:"+COLOR[a]+";stroke:var(--surface);stroke-width:1.5");
+  race.appendChild(d); dots[a]=d;
+  const lb = document.createElementNS(svgNS,"text");
+  lb.setAttribute("style","fill:"+COLOR[a]+";font-weight:650;font-size:11.5px");
+  lb.textContent = DATA.agents[a].label; race.appendChild(lb); labels[a]=lb;
+}
+const tsIndex = Object.fromEntries(DATA.ts.map((v,i)=>[v,i]));
+const tooltip = document.getElementById("tooltip");
+const markers = DATA.trades.map(tr => {
+  const bar = tsIndex[tr.ts];
+  if (bar === undefined) return null;
+  const el = document.createElementNS(svgNS,"path");
+  const x = X(bar), y = Y(DATA.agents[tr.agent].equity[bar]);
+  const s = tr.side==="buy" ? 1 : -1;
+  el.setAttribute("d",`M ${x} ${y-7*s} l 5 ${8*s} h -10 Z`);
+  el.setAttribute("class","marker");
+  el.setAttribute("style",`fill:${COLOR[tr.agent]};stroke:var(--surface);display:none`);
+  el.addEventListener("pointermove", ev => {
+    tooltip.innerHTML = `<b>${DATA.agents[tr.agent].label}</b> · ${tr.side==="buy"?"compra":"venda"} `+
+      `${tr.symbol} @ ${fmt2.format(tr.price)} $ · ${hhmm(tr.ts).et} ET<br>${tr.reason}`;
+    tooltip.style.opacity = 1;
+    tooltip.style.left = Math.min(window.innerWidth-300, ev.clientX+14)+"px";
+    tooltip.style.top = (ev.clientY+12)+"px";
+  });
+  el.addEventListener("pointerleave", () => tooltip.style.opacity = 0);
+  race.appendChild(el);
+  return {el, bar};
+}).filter(Boolean);
+
+/* ---------- ticker chips ---------- */
+const tickersEl = document.getElementById("tickers");
+const chipEls = {};
+for (const tk of Object.keys(DATA.tickers)){
+  const div = document.createElement("div");
+  div.className = "chip";
+  div.innerHTML = `<b>${tk}</b><span class="px"></span><span class="chg"></span>`;
+  tickersEl.appendChild(div); chipEls[tk] = div;
+}
+
+/* ---------- render ---------- */
+let t = 0, timer = null;
+function render(){
+  for (const a of AGENTS){
+    const eq = DATA.agents[a].equity;
+    paths[a].setAttribute("d", eq.slice(0,t+1).map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1)).join(""));
+    dots[a].setAttribute("cx",X(t)); dots[a].setAttribute("cy",Y(eq[t]));
+    labels[a].setAttribute("x",Math.min(X(t)+8,W-95)); labels[a].setAttribute("y",Y(eq[t])+4);
+  }
+  for (const m of markers) m.el.style.display = m.bar <= t ? "" : "none";
+  for (const [tk,series] of Object.entries(DATA.tickers)){
+    const chg = (series[t]/series[0]-1)*100;
+    chipEls[tk].querySelector(".px").textContent = fmt2.format(series[t])+" $";
+    const el = chipEls[tk].querySelector(".chg");
+    el.textContent = (chg>=0?"+":"")+fmt2.format(chg)+" %";
+    el.className = "chg "+(chg>=0?"pos":"neg");
+  }
+  const rank = [...AGENTS].sort((a,b)=>DATA.agents[b].equity[t]-DATA.agents[a].equity[t]);
+  document.getElementById("league").innerHTML =
+    "<tr><th>Agente</th><th>Capital €</th><th>P&L dia €</th></tr>" +
+    rank.map(a=>{
+      const eq = DATA.agents[a].equity[t];
+      const pnl = eq - DATA.agents[a].equity[0];
+      return `<tr><td><span class="dotc" style="background:${COLOR[a]}"></span>${DATA.agents[a].label}</td>`+
+        `<td>${fmt.format(eq)}</td><td class="${pnl>=0?"pos":"neg"}">${pnl>=0?"+":""}${fmt.format(pnl)}</td></tr>`;
+    }).join("");
+  const feed = DATA.trades.filter(tr=>tsIndex[tr.ts]!==undefined && tsIndex[tr.ts]<=t).slice(-12).reverse();
+  document.getElementById("feed").innerHTML = feed.map(tr=>
+    `<div class="trade" style="border-color:${COLOR[tr.agent]}">
+      <span class="t">${hhmm(tr.ts).et} ET</span> · <b>${DATA.agents[tr.agent].label}</b>
+      ${tr.side==="buy"?"compra":"vende"} <b>${tr.symbol}</b> @ ${fmt2.format(tr.price)} $
+      <div class="why">${tr.reason}</div></div>`).join("") || '<span class="sub">ainda sem trades</span>';
+  const c = hhmm(DATA.ts[t]);
+  document.getElementById("clock").innerHTML = `${c.et} <small>ET</small> · ${c.lx} <small>Lisboa</small>`;
+  document.getElementById("scrub").value = t;
+}
+
+/* season table (static) */
+const st = DATA.standings;
+const srank = Object.keys(st).sort((a,b)=>st[b].equity-st[a].equity);
+document.getElementById("season-table").innerHTML =
+  "<tr><th>Agente</th><th>Capital €</th><th>P&L época €</th><th>J. ganhas</th></tr>" +
+  srank.map(a=>{
+    const pnl = st[a].equity - CAPITAL;
+    return `<tr><td><span class="dotc" style="background:${COLOR[a]}"></span>${DATA.agents[a].label}</td>`+
+      `<td>${fmt.format(st[a].equity)}</td><td class="${pnl>=0?"pos":"neg"}">${pnl>=0?"+":""}${fmt.format(pnl)}</td>`+
+      `<td>${st[a].won}</td></tr>`;
+  }).join("");
+
+const playBtn = document.getElementById("play");
+const scrub = document.getElementById("scrub");
+scrub.max = N-1;
+function stop(){ clearInterval(timer); timer=null; playBtn.textContent="▶ Reproduzir"; }
+function play(){
+  if (t>=N-1) t=0;
+  playBtn.textContent="❚❚ Pausa";
+  timer = setInterval(()=>{ if(t>=N-1){stop();return;} t+=1; render(); }, 420);
+}
+playBtn.addEventListener("click", ()=> timer?stop():play());
+scrub.addEventListener("input", ()=>{ stop(); t=+scrub.value; render(); });
+
+t = N-1; render();  // land on "now"; replay on demand
+</script>
+</body>
+</html>
