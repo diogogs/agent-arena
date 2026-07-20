@@ -1,10 +1,10 @@
 """Weekly retrain + gated promotion (the automated learning loop, ADR-002).
 
-Pre-registration rules enforced in code, not by convention:
-- promotions only on MONDAYS, before the US open;
-- at most one per agent per week;
-- a challenger is promoted only if its VALIDATION vs_benchmark beats the
-  incumbent generation's validation vs_benchmark;
+Pre-registration rules (as amended 2026-07-20) enforced in code:
+- promotions only on MONDAYS, before the US open; at most one per agent/week;
+- Amendment 1: the challenger is the final-window generation of a six-window
+  rolling tournament, promoted only if the tournament MEDIAN of validation
+  vs_benchmark is positive AND strictly beats the incumbent's score;
 - everything lands insert-only: new generations in the registry, promotions in
   data/ledger/promotions.jsonl. The live lineup reads promotions, never
   "latest trained" — training alone never changes who plays.
