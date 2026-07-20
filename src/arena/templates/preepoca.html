@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Liga — super pré-época</title>
+<style>
+  :root {
+    --bg:#f7f8f7; --surface:#fdfdfc; --ink:#16202b; --ink-2:#4d5a66; --muted:#8a9099;
+    --hairline:#e2e4e1; --border:rgba(22,32,43,.10); --navy:#1e2a38; --accent:#2a5a8c;
+    --header-ink:#f2f5f8; --header-muted:#9db1c4; --up:#0ca30c; --down:#d03b3b;
+    --c-benchmark:#16202b; --c-momentum:#2a78d6; --c-reversao:#1baf7a; --c-cash:#8a9099;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#10151b; --surface:#171e26; --ink:#f0f3f6; --ink-2:#b6c0ca; --muted:#7e8894;
+      --hairline:#262e38; --border:rgba(240,243,246,.10); --navy:#141d28; --accent:#6f9fce;
+      --c-benchmark:#e8ecf0; --c-momentum:#3987e5; --c-reversao:#199e70; --down:#e66767; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:1020px; margin:0 auto; padding:0 20px 56px; }
+  header.masthead { background:linear-gradient(135deg,var(--navy),#2a5a8c);
+                    color:var(--header-ink); padding:24px 0 18px; margin-bottom:20px; }
+  header.masthead .wrap { padding-bottom:0; }
+  .eyebrow { font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+             color:var(--header-muted); font-weight:600; margin-bottom:6px; }
+  h1 { margin:0 0 6px; font-size:23px; font-weight:650; letter-spacing:-.01em; }
+  header p { margin:0 0 10px; max-width:74ch; color:var(--header-muted); font-size:13px; }
+  header a { color:#cfe0f1; font-weight:600; font-size:13px; margin-right:16px; }
+  h2 { font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+       color:var(--muted); font-weight:650; margin:30px 0 10px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px;
+          padding:14px 16px; }
+  .card svg { display:block; width:100%; height:auto; }
+  svg text { font:11px system-ui,sans-serif; fill:var(--muted); font-variant-numeric:tabular-nums; }
+  .gridline { stroke:var(--hairline); stroke-width:1; }
+  .zero { stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3; }
+  .eq { fill:none; stroke-width:2; stroke-linejoin:round; }
+  .eq.cash { stroke-dasharray:5 5; stroke-width:1.5; }
+  .controls-inline { display:flex; gap:12px; align-items:center; margin-bottom:8px; }
+  .controls-inline button { appearance:none; border:1px solid var(--accent); background:transparent;
+      color:var(--accent); font:600 13px system-ui,sans-serif; padding:7px 14px;
+      border-radius:7px; cursor:pointer; }
+  .controls-inline button:hover { background:var(--accent); color:#fff; }
+  .prose { max-width:78ch; font-size:14px; }
+  .prose p { margin:0 0 10px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums; }
+  th { text-align:right; color:var(--muted); font-size:11px; letter-spacing:.06em;
+       text-transform:uppercase; padding:5px 8px; border-bottom:1px solid var(--hairline); }
+  th:first-child, td:first-child { text-align:left; }
+  td { padding:7px 8px; border-bottom:1px solid var(--hairline); text-align:right; }
+  .pos { color:var(--up); } .neg { color:var(--down); }
+  .dotc { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:7px;
+          vertical-align:-1px; }
+  footer { font-size:12px; color:var(--muted); border-top:1px solid var(--hairline);
+           margin-top:26px; padding-top:12px; max-width:86ch; }
+</style>
+</head>
+<body>
+<header class="masthead"><div class="wrap">
+  <div class="eyebrow">a liga · super pré-época</div>
+  <h1>Os amigáveis não contam — ensinam</h1>
+  <p>Antes da época 1, a equipa passou pelo ginásio a sério: um torneio de estabilidade
+  (o mesmo agente treinado em seis janelas diferentes do histórico — sorte ou skill?),
+  uma amigável de dois anos contra os regimes de 2023-2026, e um teste de stress aos
+  custos. Nada disto conta para a classificação. Tudo isto explica o que vais ver na época.</p>
+  <a href="./index.html">← Arena</a><a href="./ginasio.html">Ginásio</a>
+</div></header>
+
+<div class="wrap">
+  <h2>1 · A amigável de dois anos (barras de 1 hora, 2023-2026)</h2>
+  <div class="card">
+    <div class="controls-inline">
+      <button id="play" type="button">▶ Reproduzir 2 anos</button>
+      <span id="friendly-clock" style="font-variant-numeric:tabular-nums;font-weight:650"></span>
+    </div>
+    <svg id="friendly" viewBox="0 0 900 340"></svg>
+    <table id="friendly-table" style="margin-top:10px"></table>
+  </div>
+  <div class="prose" style="margin-top:10px">
+    <p><b>Nota honesta</b>: esta exibição usa barras de 1 hora (a época live usa 15
+    minutos) e gerações treinadas para essa granularidade — serve para ver como as
+    filosofias atravessam <i>regimes</i> (o choque de taxas de 2023, os rallies), não
+    para prever a época.</p>
+  </div>
+
+  <h2>2 · Torneio de estabilidade — 6 janelas, 6 vidas</h2>
+  <div class="card">
+    <svg id="stability" viewBox="0 0 900 240"></svg>
+  </div>
+  <div class="prose" style="margin-top:10px">
+    <p>Cada ponto é a mesma estratégia re-treinada numa janela diferente e avaliada
+    fora dela. Pontos apertados = parâmetros estáveis; pontos espalhados = a validação
+    de uma janela única era sorte. É este gráfico que disciplina as promoções de
+    segunda-feira.</p>
+  </div>
+
+  <h2>3 · Stress de custos — e se o atrito duplicar? E quadruplicar?</h2>
+  <div class="card" style="overflow-x:auto;">
+    <table id="stress"></table>
+  </div>
+  <div class="prose" style="margin-top:10px">
+    <p>Os custos da época (2 pb + 1 pb por lado) são otimistas por desenho — fills IEX,
+    sem impacto de mercado. Esta tabela mostra o que sobra se a realidade for 2× ou 4×
+    pior. A rotação paga-se sempre.</p>
+  </div>
+
+  <footer>Todas as gerações treinadas na pré-época estão no registo insert-only (nota
+  "pre-season") e nenhuma entra em campo sem passar o gate de promoção pré-registado.
+  Não é aconselhamento financeiro.</footer>
+</div>
+
+<script>
+"use strict";
+const DATA = __DATA__;
+const COLOR = { benchmark:"var(--c-benchmark)", momentum:"var(--c-momentum)",
+                reversao:"var(--c-reversao)", cash:"var(--c-cash)" };
+const LABEL = { benchmark:"Benchmark (SPY)", momentum:"Momentum", reversao:"Reversão", cash:"Cash" };
+const fmt = new Intl.NumberFormat("pt-PT",{maximumFractionDigits:0});
+const svgNS = "http://www.w3.org/2000/svg";
+
+/* ---------- friendly race ---------- */
+const F = DATA.friendly;
+const AG = Object.keys(F.equity);
+const N = F.dates.length;
+const [W,H,L,R,T,B] = [900,340,64,20,14,26];
+const allEq = AG.flatMap(a => F.equity[a]);
+const [E0,E1] = [Math.min(...allEq)*0.995, Math.max(...allEq)*1.005];
+const X = i => L + i/(N-1)*(W-L-R);
+const Y = v => T + (1-(v-E0)/(E1-E0))*(H-T-B);
+const fsvg = document.getElementById("friendly");
+for (let k=0;k<=4;k++){
+  const v = E0+k/4*(E1-E0);
+  const ln = document.createElementNS(svgNS,"line");
+  ln.setAttribute("x1",L); ln.setAttribute("x2",W-R);
+  ln.setAttribute("y1",Y(v)); ln.setAttribute("y2",Y(v));
+  ln.setAttribute("class","gridline"); fsvg.appendChild(ln);
+  const tx = document.createElementNS(svgNS,"text");
+  tx.setAttribute("x",L-6); tx.setAttribute("y",Y(v)+3.5); tx.setAttribute("text-anchor","end");
+  tx.textContent = fmt.format(v); fsvg.appendChild(tx);
+}
+for (const i of [0, Math.floor(N/4), Math.floor(N/2), Math.floor(3*N/4), N-1]){
+  const tx = document.createElementNS(svgNS,"text");
+  tx.setAttribute("x",X(i)); tx.setAttribute("y",H-8); tx.setAttribute("text-anchor","middle");
+  tx.textContent = F.dates[i]; fsvg.appendChild(tx);
+}
+const fpaths={}, flabels={};
+for (const a of AG){
+  const p = document.createElementNS(svgNS,"path");
+  p.setAttribute("class","eq"+(a==="cash"?" cash":""));
+  p.setAttribute("style","stroke:"+COLOR[a]); fsvg.appendChild(p); fpaths[a]=p;
+  const lb = document.createElementNS(svgNS,"text");
+  lb.setAttribute("style","fill:"+COLOR[a]+";font-weight:650;font-size:11.5px");
+  lb.textContent = LABEL[a]; fsvg.appendChild(lb); flabels[a]=lb;
+}
+let ft = N-1, ftimer = null;
+function fRender(){
+  for (const a of AG){
+    const eq = F.equity[a];
+    fpaths[a].setAttribute("d", eq.slice(0,ft+1).map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1)).join(""));
+    flabels[a].setAttribute("x",Math.min(X(ft)+8,W-110));
+    flabels[a].setAttribute("y",Y(eq[ft])+4);
+  }
+  document.getElementById("friendly-clock").textContent = F.dates[ft];
+}
+document.getElementById("play").addEventListener("click", () => {
+  if (ftimer){ clearInterval(ftimer); ftimer=null; return; }
+  ft = 0;
+  ftimer = setInterval(() => {
+    ft = Math.min(N-1, ft+3);
+    fRender();
+    if (ft>=N-1){ clearInterval(ftimer); ftimer=null; }
+  }, 24);
+});
+fRender();
+const finals = AG.map(a=>({a, eq:F.equity[a][N-1]})).sort((x,y)=>y.eq-x.eq);
+document.getElementById("friendly-table").innerHTML =
+  "<tr><th>Agente</th><th>Capital final €</th><th>P&L 2 anos €</th></tr>" +
+  finals.map(({a,eq})=>{
+    const pnl = eq-100000;
+    return `<tr><td><span class="dotc" style="background:${COLOR[a]}"></span>${LABEL[a]}</td>`+
+      `<td>${fmt.format(eq)}</td><td class="${pnl>=0?"pos":"neg"}">${pnl>=0?"+":""}${fmt.format(pnl)}</td></tr>`;
+  }).join("");
+
+/* ---------- stability dots ---------- */
+const S = DATA.tournament;
+const sAll = Object.values(S).flat().map(r=>r.val_vs_bench);
+const [S0,S1] = [Math.min(0,...sAll)-400, Math.max(0,...sAll)+400];
+const [sW,sH,sL,sR,sT,sB] = [900,240,64,20,14,26];
+const sX = k => sL + (k+0.5)/6*(sW-sL-sR);
+const sY = v => sT + (1-(v-S0)/(S1-S0))*(sH-sT-sB);
+const ssvg = document.getElementById("stability");
+for (let k=0;k<=3;k++){
+  const v = S0+k/3*(S1-S0);
+  const ln = document.createElementNS(svgNS,"line");
+  ln.setAttribute("x1",sL); ln.setAttribute("x2",sW-sR);
+  ln.setAttribute("y1",sY(v)); ln.setAttribute("y2",sY(v));
+  ln.setAttribute("class","gridline"); ssvg.appendChild(ln);
+  const tx = document.createElementNS(svgNS,"text");
+  tx.setAttribute("x",sL-6); tx.setAttribute("y",sY(v)+3.5); tx.setAttribute("text-anchor","end");
+  tx.textContent = fmt.format(v)+" €"; ssvg.appendChild(tx);
+}
+const z = document.createElementNS(svgNS,"line");
+z.setAttribute("x1",sL); z.setAttribute("x2",sW-sR);
+z.setAttribute("y1",sY(0)); z.setAttribute("y2",sY(0));
+z.setAttribute("class","zero"); ssvg.appendChild(z);
+const zl = document.createElementNS(svgNS,"text");
+zl.setAttribute("x",sW-sR); zl.setAttribute("y",sY(0)-5); zl.setAttribute("text-anchor","end");
+zl.textContent = "empate com o benchmark (validação)"; ssvg.appendChild(zl);
+for (const [agent, rows] of Object.entries(S)){
+  const dx = agent === "momentum" ? -7 : 7;
+  rows.forEach(r=>{
+    const c = document.createElementNS(svgNS,"circle");
+    c.setAttribute("cx",sX(r.origin)+dx); c.setAttribute("cy",sY(r.val_vs_bench));
+    c.setAttribute("r",5.5);
+    c.setAttribute("style",`fill:${COLOR[agent]};stroke:var(--surface);stroke-width:1.5`);
+    ssvg.appendChild(c);
+  });
+  const last = rows[rows.length-1];
+  const lb = document.createElementNS(svgNS,"text");
+  lb.setAttribute("x",sX(last.origin)+dx+10); lb.setAttribute("y",sY(last.val_vs_bench)+4);
+  lb.setAttribute("style",`fill:${COLOR[agent]};font-weight:650`);
+  lb.textContent = agent; ssvg.appendChild(lb);
+}
+for (let k=0;k<6;k++){
+  const tx = document.createElementNS(svgNS,"text");
+  tx.setAttribute("x",sX(k)); tx.setAttribute("y",sH-8); tx.setAttribute("text-anchor","middle");
+  tx.textContent = "janela "+(k+1); ssvg.appendChild(tx);
+}
+
+/* ---------- cost stress table ---------- */
+document.getElementById("stress").innerHTML =
+  "<tr><th>Agente</th><th>Custos</th><th>P&L €</th><th>vs benchmark €</th><th>Custos pagos €</th><th>Trades</th></tr>" +
+  DATA.stress.map(r=>
+    `<tr><td><span class="dotc" style="background:${COLOR[r.agent]}"></span>${LABEL[r.agent]} <span style="color:var(--muted)">(${r.generation})</span></td>`+
+    `<td>${r.cost_scale}×</td>`+
+    `<td class="${r.pnl>=0?"pos":"neg"}">${r.pnl>=0?"+":""}${fmt.format(r.pnl)}</td>`+
+    `<td class="${r.vs_bench>=0?"pos":"neg"}">${r.vs_bench>=0?"+":""}${fmt.format(r.vs_bench)}</td>`+
+    `<td>${fmt.format(r.costs_paid)}</td><td>${r.trades}</td></tr>`).join("");
+</script>
+</body>
+</html>

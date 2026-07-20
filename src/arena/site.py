@@ -134,6 +134,15 @@ def build_site() -> Path:
     (DOCS / "ginasio.html").write_text(
         gym_template.read_text("utf-8").replace("__DATA__", gym_payload, 1), encoding="utf-8"
     )
+
+    preseason_data = DOCS / "data" / "preseason.json"
+    if preseason_data.exists():
+        (DOCS / "preepoca.html").write_text(
+            (TEMPLATE.parent / "preepoca.html").read_text("utf-8").replace(
+                "__DATA__", preseason_data.read_text("utf-8"), 1
+            ),
+            encoding="utf-8",
+        )
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     return out
 

@@ -18,6 +18,23 @@ COST_BPS = 2.0  # per side, charter minimum
 SLIPPAGE_BPS = 1.0  # adverse move applied to fills
 
 
+class cost_scale:
+    """Pre-season/stress tooling: temporarily scale frictions (context manager).
+    Live and gym runs never use this — the season's costs are pre-registered."""
+
+    def __init__(self, k: float):
+        self.k = k
+
+    def __enter__(self):
+        global COST_BPS, SLIPPAGE_BPS
+        self._saved = (COST_BPS, SLIPPAGE_BPS)
+        COST_BPS, SLIPPAGE_BPS = COST_BPS * self.k, SLIPPAGE_BPS * self.k
+
+    def __exit__(self, *exc):
+        global COST_BPS, SLIPPAGE_BPS
+        COST_BPS, SLIPPAGE_BPS = self._saved
+
+
 @dataclass
 class Trade:
     session: str
