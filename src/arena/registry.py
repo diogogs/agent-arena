@@ -24,7 +24,7 @@ def _git_sha() -> str:
         return "unknown"
 
 
-def record(generation: Generation, note: str = "") -> dict:
+def record(generation: Generation, note: str = "", extra: dict | None = None) -> dict:
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
     n_prior = sum(1 for e in load_all() if e.get("agent") == generation.agent)
     entry = {
@@ -32,6 +32,7 @@ def record(generation: Generation, note: str = "") -> dict:
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_sha": _git_sha(),
         "note": note,
+        **(extra or {}),
         **asdict(generation),
     }
     with REGISTRY.open("a", encoding="utf-8") as f:

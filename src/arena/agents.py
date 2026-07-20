@@ -69,18 +69,25 @@ class MomentumParams:
     per_symbol_fraction: float = 0.25
 
 
+# Amendment 1 (2026-07-20): intraday traders act only where the pre-season
+# showed the signal lives; everything else was cost-paying noise
+TRADABLE = ("NVDA", "TSLA")
+
+
 class Momentum(Agent):
     """Opening-range breakout, long-only, trailing stop."""
 
     name = "momentum"
 
-    def __init__(self, params: MomentumParams = MomentumParams()):
+    def __init__(self, params: MomentumParams = MomentumParams(),
+                 tradable: tuple[str, ...] | None = None):
         self.p = params
+        self.tradable = tradable
 
     def decide(self, view, portfolio):
         orders: list[Order] = []
         p = self.p
-        for symbol in view.symbols:
+        for symbol in (self.tradable or view.symbols):
             price = view.price(symbol)
             if symbol in portfolio.positions:
                 peak = portfolio.peak_price[symbol]
@@ -113,8 +120,10 @@ class Reversion(Agent):
 
     name = "reversao"
 
-    def __init__(self, params: ReversionParams = ReversionParams()):
+    def __init__(self, params: ReversionParams = ReversionParams(),
+                 tradable: tuple[str, ...] | None = None):
         self.p = params
+        self.tradable = tradable
 
     def _z(self, view: MarketView, symbol: str) -> float | None:
         closes = view.closes(symbol)
@@ -129,7 +138,7 @@ class Reversion(Agent):
     def decide(self, view, portfolio):
         orders: list[Order] = []
         p = self.p
-        for symbol in view.symbols:
+        for symbol in (self.tradable or view.symbols):
             z = self._z(view, symbol)
             if z is None:
                 continue

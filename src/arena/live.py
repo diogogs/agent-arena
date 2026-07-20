@@ -24,7 +24,16 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from .agents import Agent, Benchmark, Cash, Momentum, MomentumParams, Reversion, ReversionParams
+from .agents import (
+    TRADABLE,
+    Agent,
+    Benchmark,
+    Cash,
+    Momentum,
+    MomentumParams,
+    Reversion,
+    ReversionParams,
+)
 from .bars import build_sessions
 from .data import regular_session_only, update_archive
 from .engine import Portfolio, step_bar
@@ -70,9 +79,11 @@ def lineup() -> tuple[dict[str, Agent], dict[str, str]]:
         "benchmark": Benchmark("SPY"),
         "cash": Cash(),
         "momentum": Momentum(MomentumParams(**{
-            k: v for k, v in mom_params.items() if k in MomentumParams.__annotations__})),
+            k: v for k, v in mom_params.items() if k in MomentumParams.__annotations__}),
+            tradable=TRADABLE),
         "reversao": Reversion(ReversionParams(**{
-            k: v for k, v in rev_params.items() if k in ReversionParams.__annotations__})),
+            k: v for k, v in rev_params.items() if k in ReversionParams.__annotations__}),
+            tradable=TRADABLE),
     }
     return agents, {"benchmark": "static", "cash": "static",
                     "momentum": mom_id, "reversao": rev_id}

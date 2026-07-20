@@ -1,26 +1,33 @@
-"""The pre-registered promotion gate, enforced in code."""
+"""The promotion gate (Amendment 1: rolling-tournament median), enforced in code."""
 
 from datetime import UTC, datetime
 
-from arena.promote import decide_promotion, promotion_window_open
+from arena.promote import decide_promotion, incumbent_score, promotion_window_open
 
 
-def _gen(val_vs_bench: float) -> dict:
-    return {"validation": {"vs_benchmark": val_vs_bench}}
-
-
-def test_challenger_must_strictly_beat_incumbent_validation():
-    ok, _ = decide_promotion(_gen(500.0), _gen(200.0))
+def test_challenger_median_must_be_positive_and_beat_incumbent():
+    ok, _ = decide_promotion(500.0, 200.0)
     assert ok
-    ok, reason = decide_promotion(_gen(200.0), _gen(500.0))
+    ok, reason = decide_promotion(200.0, 500.0)
     assert not ok and "does not beat" in reason
-    ok, _ = decide_promotion(_gen(500.0), _gen(500.0))
+    ok, _ = decide_promotion(500.0, 500.0)
     assert not ok  # ties do not promote
+    ok, reason = decide_promotion(-50.0, -900.0)
+    assert not ok and "not positive" in reason  # beating a bad incumbent is not enough
 
 
-def test_kickoff_without_incumbent_promotes():
-    ok, reason = decide_promotion(_gen(-100.0), None)
+def test_kickoff_without_incumbent_still_requires_positive_median():
+    ok, reason = decide_promotion(300.0, None)
     assert ok and "kickoff" in reason
+    ok, _ = decide_promotion(-100.0, None)
+    assert not ok
+
+
+def test_incumbent_score_prefers_tournament_median():
+    assert incumbent_score({"tournament_median": 42.0,
+                            "validation": {"vs_benchmark": 999.0}}) == 42.0
+    assert incumbent_score({"validation": {"vs_benchmark": 123.0}}) == 123.0
+    assert incumbent_score(None) is None
 
 
 def test_promotion_window_is_monday_before_open():

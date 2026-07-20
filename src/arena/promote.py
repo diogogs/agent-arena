@@ -19,7 +19,6 @@ from zoneinfo import ZoneInfo
 
 from .bars import build_sessions
 from .data import load_archive, regular_session_only
-from .gym import train_generation
 from .registry import load_all, record
 
 PROMOTIONS = Path("data/ledger/promotions.jsonl")
@@ -53,19 +52,35 @@ def promotion_window_open(now: datetime) -> bool:
     return now_et.weekday() == 0 and (now_et.hour, now_et.minute) < (9, 30)
 
 
-def decide_promotion(challenger: dict, incumbent: dict | None) -> tuple[bool, str]:
-    """The pre-registered gate: validation vs_benchmark must strictly improve."""
-    new_val = challenger["validation"]["vs_benchmark"]
+def incumbent_score(entry: dict | None) -> float | None:
+    """Amendment 1: tournament median when the incumbent has one, else its
+    single-split validation (the g001 kickoff case)."""
+    if entry is None:
+        return None
+    if "tournament_median" in entry:
+        return float(entry["tournament_median"])
+    return float(entry["validation"]["vs_benchmark"])
+
+
+def decide_promotion(challenger_median: float, incumbent: float | None) -> tuple[bool, str]:
+    """Amendment 1 gate: the challenger's rolling-tournament MEDIAN must be
+    positive AND strictly beat the incumbent's score."""
+    if challenger_median <= 0:
+        return False, f"tournament median {challenger_median:+.0f} is not positive"
     if incumbent is None:
-        return True, f"kickoff lineup (validation vs_benchmark {new_val:+.0f})"
-    old_val = incumbent["validation"]["vs_benchmark"]
-    if new_val > old_val:
-        return True, f"validation vs_benchmark {new_val:+.0f} beats incumbent {old_val:+.0f}"
-    return False, f"validation vs_benchmark {new_val:+.0f} does not beat incumbent {old_val:+.0f}"
+        return True, f"kickoff lineup (tournament median {challenger_median:+.0f})"
+    if challenger_median > incumbent:
+        return True, f"tournament median {challenger_median:+.0f} beats incumbent {incumbent:+.0f}"
+    return False, f"tournament median {challenger_median:+.0f} does not beat incumbent {incumbent:+.0f}"
 
 
-def weekly_retrain(now: datetime | None = None, n_trials: int = 80) -> list[dict]:
-    """Train challengers on the full archive; promote through the gate."""
+def weekly_retrain(now: datetime | None = None, n_trials: int = 40) -> list[dict]:
+    """Rolling tournament per agent; the last window's generation is the
+    fielding candidate, gated by the tournament MEDIAN (Amendment 1)."""
+    import statistics
+
+    from .gym import rolling_tournament
+
     now = now or datetime.now(UTC)
     frames = {s: regular_session_only(load_archive(s, "15m")) for s in UNIVERSE}
     sessions = build_sessions(frames)
@@ -73,10 +88,18 @@ def weekly_retrain(now: datetime | None = None, n_trials: int = 80) -> list[dict
     lineup = current_lineup_ids()
     outcomes = []
     for agent in ("momentum", "reversao"):
-        generation = train_generation(agent, sessions, n_trials=n_trials, seed=len(sessions))
-        entry = record(generation, note=f"weekly retrain {now:%Y-%m-%d}")
-        incumbent = registry.get(lineup.get(agent))
-        promote, reason = decide_promotion(entry, incumbent)
+        generations = rolling_tournament(agent, sessions, n_trials=n_trials,
+                                         seed=2000 + len(sessions))
+        if not generations:
+            outcomes.append({"agent": agent, "promoted": False,
+                             "reason": "not enough sessions for a tournament"})
+            continue
+        median = statistics.median(g.validation.vs_benchmark for g in generations)
+        for g in generations[:-1]:
+            record(g, note=f"weekly tournament {now:%Y-%m-%d}")
+        entry = record(generations[-1], note=f"weekly tournament {now:%Y-%m-%d} — candidate",
+                       extra={"tournament_median": round(median, 2), "candidate": True})
+        promote, reason = decide_promotion(median, incumbent_score(registry.get(lineup.get(agent))))
         window = promotion_window_open(now)
         if promote and window:
             _append_promotion({
@@ -85,6 +108,7 @@ def weekly_retrain(now: datetime | None = None, n_trials: int = 80) -> list[dict
             })
         outcomes.append({
             "agent": agent, "generation_id": entry["generation_id"],
+            "tournament_median": round(median, 2),
             "promoted": bool(promote and window),
             "reason": reason if window else f"outside promotion window — {reason}",
         })

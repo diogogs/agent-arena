@@ -13,7 +13,15 @@ from dataclasses import dataclass
 import numpy as np
 import optuna
 
-from .agents import Agent, Benchmark, Momentum, MomentumParams, Reversion, ReversionParams
+from .agents import (
+    TRADABLE,
+    Agent,
+    Benchmark,
+    Momentum,
+    MomentumParams,
+    Reversion,
+    ReversionParams,
+)
 from .bars import Session
 from .engine import Portfolio, run_session
 
@@ -72,9 +80,13 @@ def _suggest_reversion(trial: optuna.Trial) -> ReversionParams:
         per_symbol_fraction=trial.suggest_float("per_symbol_fraction", 0.1, 0.34),
     )
 
+def _make(cls, params):
+    return cls(params, tradable=TRADABLE)
+
+
 FACTORIES = {
-    "momentum": (Momentum, _suggest_momentum),
-    "reversao": (Reversion, _suggest_reversion),
+    "momentum": (lambda p: _make(Momentum, p), _suggest_momentum),
+    "reversao": (lambda p: _make(Reversion, p), _suggest_reversion),
 }
 
 
@@ -102,7 +114,10 @@ def train_generation(
     train, val = sessions[:split], sessions[split:]
 
     def objective(trial: optuna.Trial) -> float:
-        return evaluate(cls(suggest(trial)), train).vs_benchmark
+        # Amendment 3 (2026-07-20): turnover penalty — costs are double-counted
+        # in the training objective so the gym learns to rotate less
+        metrics = evaluate(cls(suggest(trial)), train)
+        return metrics.vs_benchmark - metrics.costs_paid
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(direction="maximize",
@@ -119,3 +134,30 @@ def train_generation(
         train_sessions=(train[0].date, train[-1].date),
         val_sessions=(val[0].date, val[-1].date),
     )
+
+
+def rolling_tournament(
+    agent_name: str,
+    sessions: list[Session],
+    n_windows: int = 6,
+    train_len: int = 28,
+    val_len: int = 12,
+    n_trials: int = 40,
+    seed: int = 1000,
+) -> list[Generation]:
+    """Amendment 1: the strategy's re-trainability across rolling windows.
+    The FINAL window's generation is the fielding candidate; the MEDIAN of the
+    validation vs_benchmark across windows is its promotion score."""
+    generations = []
+    step = max(1, (len(sessions) - train_len - val_len) // max(n_windows - 1, 1))
+    for k in range(n_windows):
+        window = sessions[k * step : k * step + train_len + val_len]
+        if len(window) < train_len + val_len:
+            break
+        generations.append(train_generation(
+            agent_name, window, val_fraction=val_len / (train_len + val_len),
+            n_trials=n_trials, seed=seed + k,
+        ))
+    return generations
+
+

@@ -65,3 +65,42 @@ a discussion, not deployment.
 
 This is a public engineering and learning experiment with virtual money.
 Nothing here is investment advice or a solicitation of any kind.
+
+---
+
+## Amendments — 2026-07-20, BEFORE the season's first matchday
+
+Grounds: the pre-season report (docs/data/preseason.json, published on the
+site). All amendments appended per this document's own rule; the original text
+above stands unedited.
+
+**Amendment 1 — promotion gate strengthened.** The stability tournament showed
+single-split validation is window luck (both agents' six-window validation
+spreads straddle zero). The promotion criterion becomes: the challenger is the
+final-window generation of a six-window rolling tournament, and it is promoted
+only if the tournament MEDIAN of validation vs_benchmark is (a) positive and
+(b) strictly above the incumbent's score (its own tournament median, or its
+single-split validation for the g001 kickoff generations). Monday-only timing
+and once-per-agent-per-week are unchanged.
+
+**Amendment 2 — tradable universe of the intraday traders.** Trade-level
+decomposition showed the entire momentum edge lives in the two high-volatility
+names (NVDA +2,665, TSLA +3,546 over 60 sessions) while SPY/QQQ/AAPL/MSFT
+contribute noise that pays costs. Momentum and Reversão now trade ONLY NVDA
+and TSLA. The data universe, the benchmark (SPY buy & hold) and the cost model
+are unchanged.
+
+**Amendment 3 — turnover penalty in the training objective.** Reversão's costs
+consumed 81% of its gross edge. The Gym's optimization objective becomes
+`vs_benchmark − costs_paid` (costs double-counted as a regularizer), so
+generations learn to rotate less. Arena accounting is unchanged — this only
+changes what the agents optimize for in training.
+
+**Declared for season 1.5 (implementation to follow, entry via a future
+dated amendment on a Monday):** two new contestants within the 4-trader cap,
+addressing the structural finding that flat-overnight agents forfeit the
+equity risk premium (two-year friendly: benchmark +69,915 vs momentum +0):
+a multi-day SWING trend follower, and a VOLATILITY-TARGETED index holder
+(SPY scaled by inverse realized volatility). Both will carry positions
+overnight, be trained on the two-year 1h archive, and pass the same
+promotion gate before fielding.
