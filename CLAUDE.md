@@ -92,6 +92,12 @@ via Actions ✓ (yfinance ok nos IPs do GitHub). Pendentes do autor: PAT fine-gr
 (Actions RW) + job cron-job.org 15/15 min 13:25-20:10 UTC seg-sex (até lá corre só o
 cron fallback do Actions, com os atrasos conhecidos); Alpaca opcional. 10 testes verdes.
 
+**Loop de aprendizagem AUTOMÁTICO (2026-07-20, pós-J4)**: lineup lê o ledger de
+promoções insert-only (treinar nunca muda quem joga); workflow `arena-gym` às
+2ªs 11:45 UTC retreina no arquivo completo e promove só se a challenger bater a
+incumbente em validação (gate pré-registado, testado); página pública do
+Ginásio com a curva geracional + 3 números por geração. 14 testes verdes.
+
 ## Jornadas
 
 - [x] **J0 — Charter + repo** (2026-07-20)
