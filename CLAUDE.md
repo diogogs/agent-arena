@@ -104,7 +104,12 @@ cron fallback do Actions, com os atrasos conhecidos); Alpaca opcional. 10 testes
 - [x] **J3 — Arena live** (2026-07-20): ciclo idempotente, ledger de jornadas,
   site do ledger real, GO-LIVE (repo público + Pages + 1º ciclo remoto ✓);
   falta do autor: PAT + cron-job.org (página Ginásio: fica para a J4)
-- [ ] **J4 — Pré-registo commitado + arranque da ÉPOCA 1** (geração v1 do ginásio)
+- [x] **J4 — Pré-registo commitado + ÉPOCA 1** (2026-07-20):
+  `docs/pre-registration-season-1.md` commitado ANTES da 1ª jornada oficial —
+  época de 60 jornadas a partir de 2026-07-21, lineup g001 congelado, promoções
+  só à 2ª-feira com critério de validação, go/no-go com IC bootstrap (resultado
+  esperado declarado: no-go), documento imutável (amendments só por apêndice).
+  Rollover automático com reset de capital testado
 - [ ] **J5 — Meia época**: relatório; agente ML / o Capitão (época 1.5)
 - [ ] **J6 — Fim da época**: write-up honesto + decisão go/no-go
 

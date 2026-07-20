@@ -35,7 +35,11 @@ LEDGER = Path("data/ledger")
 UNIVERSE = ("SPY", "QQQ", "AAPL", "MSFT", "NVDA", "TSLA")
 NY = ZoneInfo("America/New_York")
 BAR_MINUTES = 15
-SEASON = 0  # pre-season until the J4 pre-registration commit bumps it
+SEASON_1_START = "2026-07-21"  # pre-registered (docs/pre-registration-season-1.md)
+
+
+def season_of(matchday: str) -> int:
+    return 1 if matchday >= SEASON_1_START else 0
 
 # NYSE holidays remaining in 2026 (extend at season roll-over)
 HOLIDAYS = {"2026-09-07", "2026-11-26", "2026-12-25"}
@@ -74,7 +78,7 @@ def _load_state() -> dict:
     if path.exists():
         return json.loads(path.read_text("utf-8"))
     return {"portfolios": {}, "last_ts": None, "matchday": None,
-            "day_open_equity": {}, "closed": True, "season": SEASON}
+            "day_open_equity": {}, "closed": True, "season": 0}
 
 
 def _save_state(state: dict) -> None:
@@ -130,6 +134,11 @@ def run_cycle(now: datetime | None = None, fetch: bool = True) -> dict:
     if state["matchday"] != today:
         state["matchday"] = today
         state["closed"] = False
+        if season_of(today) != state.get("season"):
+            # season kickoff: every portfolio resets to the pre-registered capital
+            state["season"] = season_of(today)
+            state["portfolios"] = {}
+            state["last_ts"] = None
         for name in agents:
             if name not in state["portfolios"]:
                 state["portfolios"][name] = _portfolio_to(Portfolio(cash=CAPITAL))

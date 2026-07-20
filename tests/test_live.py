@@ -79,3 +79,30 @@ def test_incremental_cycles_close_once(sandbox):
 def test_weekend_is_a_noop(sandbox):
     saturday = datetime(2026, 7, 18, 15, 0, tzinfo=UTC)
     assert live.run_cycle(now=saturday, fetch=False)["status"] == "closed"
+
+
+def test_season_rollover_resets_portfolios(sandbox, monkeypatch):
+    # leftover season-0 state with mutated equity must not leak into season 1
+    ledger = sandbox / "ledger"
+    ledger.mkdir(exist_ok=True)
+    (ledger / "state.json").write_text(json.dumps({
+        "portfolios": {"cash": {"cash": 123456.0, "positions": {}, "entry_price": {},
+                                 "peak_price": {}, "costs_paid": 0.0}},
+        "last_ts": None, "matchday": "2026-07-13", "day_open_equity": {},
+        "closed": True, "season": 0,
+    }), encoding="utf-8")
+
+    # move the synthetic session to Tuesday 2026-07-21 (season 1 start)
+    path = sandbox / "archive" / "15m" / "SPY.parquet"
+    frame = pd.read_parquet(path)
+    frame.index = frame.index + pd.Timedelta(days=8)
+    frame.to_parquet(path)
+
+    after_close = datetime(2026, 7, 21, 21, 0, tzinfo=UTC)
+    summary = live.run_cycle(now=after_close, fetch=False)
+    assert summary["status"] == "ok" and summary["closed"]
+    state = json.loads((ledger / "state.json").read_text("utf-8"))
+    assert state["season"] == 1
+    assert abs(state["portfolios"]["cash"]["cash"] - 100000.0) < 1e-6  # reset, not 123456
+    matchdays = _lines(sandbox, "matchdays.jsonl")
+    assert matchdays[-1]["season"] == 1
