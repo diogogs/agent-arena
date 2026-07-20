@@ -66,12 +66,19 @@ write-up final, incluindo onde falha.
 
 ## Estado (2026-07-20)
 
-**J0+J1 fechadas** (2026-07-20): charter aprovado, repo local, maquete da arena
-(replay do dia sintético com algoritmos reais + custos) publicada como Artifact e
-aprovada pelo autor. Das direções do autor nasceu o **ADR-002 (Ginásio/Arena)**:
-treino histórico point-in-time rápido, arena live como exame, jornadas + curva
-geracional; LLM para o backlog. **Próximo: J2 — Motor + Ginásio.** Sem remoto
-GitHub ainda (criar público só com aprovação do autor).
+**J0+J1 fechadas; J2 (Motor + Ginásio) FUNCIONAL** (2026-07-20). Verificado live:
+yfinance sem chave dá 15m/5m×60 dias e 1h×730 dias — o arquivo próprio
+insert-only (`data/archive/`, commitado, 6 símbolos) cresce a cada ingestão e
+torna-se mais fundo que a fonte. Motor: MarketView point-in-time (no-lookahead
+POR CONSTRUÇÃO — a view só contém cópias do passado), executor com custos
+(2 pb + 1 pb slippage; bug de fee-sem-cobertura apanhado por teste), 7 testes
+verdes (lookahead, conservação, custo exato do round-trip, flatten EOD,
+determinismo). Ginásio: walk-forward Optuna → primeiras gerações treinadas em
+dados reais (60 sessões, abr-jul 2026) e registadas insert-only:
+`momentum-g001` (val +3 475 €, +2 283 vs bench — 12 sessões = ruído, ler com
+ICs) e `reversao-g001` (val +327 €, −865 vs bench). Pendente do autor: conta
+Alpaca (upgrade de dados, não bloqueia). **Próximo: J3 — Arena live** (loop
+paper cron→Actions, jornadas, site estático). Sem remoto GitHub ainda.
 
 ## Jornadas
 
