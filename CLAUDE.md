@@ -29,8 +29,8 @@
 |---|---|
 | Benchmark (SPY buy & hold) | O adversário a bater |
 | Cash | O controlo ("não fazer nada") |
-| Momentum (breakout da abertura + trailing stop) | "A força continua" |
-| Reversão (desvios ao VWAP) | A religião oposta — o duelo é o curso |
+| Momentum (breakout da abertura + trailing stop) | "A força continua" — só NVDA/TSLA (emenda 2) |
+| Reversão (desvios ao VWAP) | A religião oposta — só NVDA/TSLA (emenda 2) |
 
 Época 1.5+: agente ML e o Capitão (alocador). LLM: backlog (fora do caminho
 crítico, decisão do autor 2026-07-20). Máx. 4 traders/época.
@@ -64,39 +64,35 @@ Por agente/época: P&L líquido vs benchmark, custos pagos, nº trades, drawdown
 máx., IC bootstrap da diferença para o benchmark. Relatório de meia época +
 write-up final, incluindo onde falha.
 
-## Estado (2026-07-20)
+## Estado (2026-07-20, fim do dia de fundação — J0→J4 + pré-época num dia)
 
-**J0+J1 fechadas; J2 (Motor + Ginásio) FUNCIONAL** (2026-07-20). Verificado live:
-yfinance sem chave dá 15m/5m×60 dias e 1h×730 dias — o arquivo próprio
-insert-only (`data/archive/`, commitado, 6 símbolos) cresce a cada ingestão e
-torna-se mais fundo que a fonte. Motor: MarketView point-in-time (no-lookahead
-POR CONSTRUÇÃO — a view só contém cópias do passado), executor com custos
-(2 pb + 1 pb slippage; bug de fee-sem-cobertura apanhado por teste), 7 testes
-verdes (lookahead, conservação, custo exato do round-trip, flatten EOD,
-determinismo). Ginásio: walk-forward Optuna → primeiras gerações treinadas em
-dados reais (60 sessões, abr-jul 2026) e registadas insert-only:
-`momentum-g001` (val +3 475 €, +2 283 vs bench — 12 sessões = ruído, ler com
-ICs) e `reversao-g001` (val +327 €, −865 vs bench). **J3 CONSTRUÍDA E VIVA
-LOCALMENTE** (2026-07-20): `arena.live.run_cycle` (idempotente — testado; só
-barras fechadas; jornada fecha no bar das 15:45 ET; ledger insert-only em
-`data/ledger/`: cycles/trades/matchdays.jsonl + state.json), executor único
-partilhado gym/live (`step_bar`), **primeira jornada real em curso na época 0**
-(2026-07-20: 3 trades reais das g001; momentum a bater o benchmark intradia).
-Site estático gerado do ledger (`arena.site` → `docs/index.html`, Pages-ready)
-com a experiência da maquete aprovada; workflow `arena-live.yml` pronto
-(dispatch + cron fallback). Free-tier auditado ✓ (risco nº1: yfinance de IPs
-do Actions — plano B: Alpaca). **GO-LIVE FEITO (2026-07-20)**: repo público
-[github.com/diogogs/agent-arena](https://github.com/diogogs/agent-arena), Pages ativo em
-[diogogs.github.io/agent-arena](https://diogogs.github.io/agent-arena/), 1º ciclo remoto
-via Actions ✓ (yfinance ok nos IPs do GitHub). Pendentes do autor: PAT fine-grained
-(Actions RW) + job cron-job.org 15/15 min 13:25-20:10 UTC seg-sex (até lá corre só o
-cron fallback do Actions, com os atrasos conhecidos); Alpaca opcional. 10 testes verdes.
+**TUDO LIVE E 100% AUTÓNOMO** — [arena](https://diogogs.github.io/agent-arena/) ·
+[ginásio](https://diogogs.github.io/agent-arena/ginasio.html) ·
+[pré-época](https://diogogs.github.io/agent-arena/preepoca.html) ·
+[repo](https://github.com/diogogs/agent-arena). 19 testes verdes.
 
-**Loop de aprendizagem AUTOMÁTICO (2026-07-20, pós-J4)**: lineup lê o ledger de
-promoções insert-only (treinar nunca muda quem joga); workflow `arena-gym` às
-2ªs 11:45 UTC retreina no arquivo completo e promove só se a challenger bater a
-incumbente em validação (gate pré-registado, testado); página pública do
-Ginásio com a curva geracional + 3 números por geração. 14 testes verdes.
+- **Ritmo semanal sem intervenção**: seg 11:45 UTC torneio do ginásio (+promoção
+  se passar o gate) → seg-sex 13:30-20:00 UTC jornadas (ciclos 15 min via
+  cron-job.org→Actions, fallback cron do Actions) → jornada fecha às ~20:10 →
+  site regenera a cada ciclo. Jornada inaugural (época 0, 07-20): venceu o
+  momentum +436 €; benchmark último, −934 € (um dia = ruído, regra da casa).
+- **Época 1 arranca 2026-07-21** (60 jornadas, reset a 100k testado). Pré-registo
+  + **3 emendas datadas de 07-20** (fundamentadas na pré-época, apendadas antes
+  do kickoff): (1) promoção exige mediana POSITIVA do torneio rolante de 6
+  janelas que bata a incumbente; (2) traders intradiários só negoceiam
+  **NVDA/TSLA** (todo o edge vive lá; o resto pagava custos); (3) objetivo de
+  treino com penalização de rotação (`vs_bench − custos`).
+- **Super pré-época publicada** (as 3 lições): torneio de estabilidade — spreads
+  de validação atravessam zero (split único = lotaria); amigável de 2 anos —
+  benchmark +69,9k vs momentum +0 (**agentes flat-overnight doam o prémio de
+  risco — o achado estrutural central**); stress de custos — a 4× o momentum
+  sobrevive por +101 € após pagar 6,7k.
+- **Diversificação declarada (época 1.5, por implementar)**: swing multi-dia +
+  carteira de risco-alvo (SPY / vol inversa) — cobrem o eixo overnight; entram
+  pelo mesmo gate. Máx. 4 traders mantido.
+- Infra: custo zero auditado; risco nº1 = yfinance em IPs do Actions (1ª semana
+  é o teste de fogo; plano B: conta Alpaca — pendente opcional do autor). PAT
+  `cron-agent-arena-dispatch` expira ~2026-10-18 (checklist mestre).
 
 ## Jornadas
 
@@ -116,8 +112,10 @@ Ginásio com a curva geracional + 3 números por geração. 14 testes verdes.
   só à 2ª-feira com critério de validação, go/no-go com IC bootstrap (resultado
   esperado declarado: no-go), documento imutável (amendments só por apêndice).
   Rollover automático com reset de capital testado
-- [ ] **J5 — Meia época**: relatório; agente ML / o Capitão (época 1.5)
-- [ ] **J6 — Fim da época**: write-up honesto + decisão go/no-go
+- [ ] **J5 — Época 1.5**: implementar swing + risco-alvo no ginásio (entram pelo
+  gate numa 2ª-feira, por emenda datada); relatório de meia época à jornada 30
+  (`uv run python -m arena.metrics`)
+- [ ] **J6 — Fim da época**: write-up honesto + decisão go/no-go (esperado: no-go)
 
 ## Convenções
 
