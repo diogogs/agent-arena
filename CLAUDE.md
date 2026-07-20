@@ -85,9 +85,12 @@ partilhado gym/live (`step_bar`), **primeira jornada real em curso na época 0**
 Site estático gerado do ledger (`arena.site` → `docs/index.html`, Pages-ready)
 com a experiência da maquete aprovada; workflow `arena-live.yml` pronto
 (dispatch + cron fallback). Free-tier auditado ✓ (risco nº1: yfinance de IPs
-do Actions — plano B: Alpaca). **Go-live = 4 gestos do autor**: repo público
-+ push; Pages (main, /docs); PAT fine-grained; jobs cron-job.org 15/15 min
-13:25-20:10 UTC seg-sex. Alpaca opcional. 10 testes verdes.
+do Actions — plano B: Alpaca). **GO-LIVE FEITO (2026-07-20)**: repo público
+[github.com/diogogs/agent-arena](https://github.com/diogogs/agent-arena), Pages ativo em
+[diogogs.github.io/agent-arena](https://diogogs.github.io/agent-arena/), 1º ciclo remoto
+via Actions ✓ (yfinance ok nos IPs do GitHub). Pendentes do autor: PAT fine-grained
+(Actions RW) + job cron-job.org 15/15 min 13:25-20:10 UTC seg-sex (até lá corre só o
+cron fallback do Actions, com os atrasos conhecidos); Alpaca opcional. 10 testes verdes.
 
 ## Jornadas
 
