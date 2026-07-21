@@ -3,13 +3,13 @@
     "benchmark": {
       "cash": -1.4551915228366852e-11,
       "positions": {
-        "SPY": 133.54975863598045
+        "SPY": 134.2221384536361
       },
       "entry_price": {
-        "SPY": 748.6348535583496
+        "SPY": 744.8846006408692
       },
       "peak_price": {
-        "SPY": 748.6348535583496
+        "SPY": 744.8846006408692
       },
       "costs_paid": 29.99400119976005
     },
@@ -21,28 +21,28 @@
       "costs_paid": 0.0
     },
     "momentum": {
-      "cash": 100435.64108104922,
+      "cash": 100000.0,
       "positions": {},
       "entry_price": {},
       "peak_price": {},
-      "costs_paid": 20.4438811328231
+      "costs_paid": 0.0
     },
     "reversao": {
-      "cash": 99688.11479358989,
+      "cash": 100000.0,
       "positions": {},
       "entry_price": {},
       "peak_price": {},
-      "costs_paid": 59.90741530150339
+      "costs_paid": 0.0
     }
   },
-  "last_ts": "2026-07-20T19:45:00+00:00",
-  "matchday": "2026-07-20",
+  "last_ts": "2026-07-21T13:30:00+00:00",
+  "matchday": "2026-07-21",
   "day_open_equity": {
     "benchmark": 100000.0,
     "cash": 100000.0,
     "momentum": 100000.0,
     "reversao": 100000.0
   },
-  "closed": true,
-  "season": 0
+  "closed": false,
+  "season": 1
 }
