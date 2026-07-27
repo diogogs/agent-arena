@@ -28,20 +28,14 @@
       "costs_paid": 40.428426534660375
     },
     "reversao": {
-      "cash": 74467.77259508477,
-      "positions": {
-        "TSLA": 82.49266908858051
-      },
-      "entry_price": {
-        "TSLA": 305.9855820709229
-      },
-      "peak_price": {
-        "TSLA": 308.4419860839844
-      },
-      "costs_paid": 22.6783782762685
+      "cash": 99869.58409659949,
+      "positions": {},
+      "entry_price": {},
+      "peak_price": {},
+      "costs_paid": 30.300700234633958
     }
   },
-  "last_ts": "2026-07-27T19:30:00+00:00",
+  "last_ts": "2026-07-27T19:45:00+00:00",
   "matchday": "2026-07-27",
   "day_open_equity": {
     "benchmark": 99984.0813169734,
@@ -49,6 +43,6 @@
     "momentum": 99402.69947502675,
     "reversao": 99714.38827621163
   },
-  "closed": false,
+  "closed": true,
   "season": 1
 }
