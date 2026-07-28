@@ -21,11 +21,17 @@
       "costs_paid": 0.0
     },
     "momentum": {
-      "cash": 99402.69947502675,
-      "positions": {},
-      "entry_price": {},
-      "peak_price": {},
-      "costs_paid": 40.428426534660375
+      "cash": 65750.2156876747,
+      "positions": {
+        "NVDA": 170.64794779628363
+      },
+      "entry_price": {
+        "NVDA": 197.1647187728882
+      },
+      "peak_price": {
+        "NVDA": 197.1647187728882
+      },
+      "costs_paid": 50.522152925587804
     },
     "reversao": {
       "cash": 99869.58409659949,
@@ -35,7 +41,7 @@
       "costs_paid": 30.300700234633958
     }
   },
-  "last_ts": "2026-07-28T14:30:00+00:00",
+  "last_ts": "2026-07-28T14:45:00+00:00",
   "matchday": "2026-07-28",
   "day_open_equity": {
     "benchmark": 99089.49371339683,
