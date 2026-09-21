@@ -35,14 +35,14 @@
       "costs_paid": 243.708728629027
     }
   },
-  "last_ts": "2026-09-18T19:45:00+00:00",
-  "matchday": "2026-09-18",
+  "last_ts": "2026-09-21T13:30:00+00:00",
+  "matchday": "2026-09-21",
   "day_open_equity": {
-    "benchmark": 102149.7568316859,
+    "benchmark": 102906.77165870901,
     "cash": 100000.0,
     "momentum": 97441.02086270053,
     "reversao": 100450.52806121211
   },
-  "closed": true,
+  "closed": false,
   "season": 1
 }
