@@ -28,21 +28,27 @@
       "costs_paid": 875.7396363764364
     },
     "reversao": {
-      "cash": 99973.96901035315,
-      "positions": {},
-      "entry_price": {},
-      "peak_price": {},
-      "costs_paid": 456.8028958691123
+      "cash": 74661.63026612187,
+      "positions": {
+        "NVDA": 122.34562969622677
+      },
+      "entry_price": {
+        "NVDA": 206.8506848312378
+      },
+      "peak_price": {
+        "NVDA": 206.97000122070312
+      },
+      "costs_paid": 464.39507905574436
     }
   },
-  "last_ts": "2026-11-02T20:45:00+00:00",
-  "matchday": "2026-11-02",
+  "last_ts": "2026-11-03T19:30:00+00:00",
+  "matchday": "2026-11-03",
   "day_open_equity": {
-    "benchmark": 101994.06275567813,
+    "benchmark": 101258.51986620914,
     "cash": 100000.0,
-    "momentum": 95571.22913992492,
-    "reversao": 100252.95058511072
+    "momentum": 94948.23158167151,
+    "reversao": 99973.96901035315
   },
-  "closed": true,
+  "closed": false,
   "season": 1
 }
