@@ -35,7 +35,7 @@
       "costs_paid": 517.4867799360328
     }
   },
-  "last_ts": "2026-11-10T19:45:00+00:00",
+  "last_ts": "2026-11-10T20:45:00+00:00",
   "matchday": "2026-11-10",
   "day_open_equity": {
     "benchmark": 100571.30317270807,
@@ -43,6 +43,6 @@
     "momentum": 94093.08173920467,
     "reversao": 99801.15789569198
   },
-  "closed": false,
+  "closed": true,
   "season": 1
 }
